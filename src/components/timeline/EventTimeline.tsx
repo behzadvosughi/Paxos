@@ -6,13 +6,15 @@ export function EventTimeline() {
   const state = useSimulationStore((store) => store.state);
   const selectedEventId = useSimulationStore((store) => store.selectedEventId);
   const selectEvent = useSimulationStore((store) => store.selectEvent);
-  const endRef = useRef<HTMLLIElement>(null);
+  const listRef = useRef<HTMLOListElement>(null);
   const { t, event, kind, time } = useI18n();
 
+  // Follow the newest entry inside the timeline only. Scrolling the list itself
+  // keeps the page where the user left it while the simulation runs.
   useEffect(() => {
-    const element = endRef.current;
-    if (element && typeof element.scrollIntoView === 'function') {
-      element.scrollIntoView({ block: 'nearest' });
+    const list = listRef.current;
+    if (list) {
+      list.scrollTop = list.scrollHeight;
     }
   }, [state.log.length]);
 
@@ -26,11 +28,10 @@ export function EventTimeline() {
       {state.log.length === 0 ? (
         <p className="hint">{t('timelineEmpty')}</p>
       ) : (
-        <ol className="timeline">
-          {state.log.map((entry, index) => (
+        <ol className="timeline" ref={listRef}>
+          {state.log.map((entry) => (
             <li
               key={entry.id}
-              ref={index === state.log.length - 1 ? endRef : undefined}
               className={`timeline-row${entry.id === selectedEventId ? ' selected' : ''}`}
             >
               <button type="button" onClick={() => selectEvent(entry)}>
