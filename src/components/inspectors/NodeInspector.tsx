@@ -1,12 +1,7 @@
 import { formatBallot } from '../../core/paxos/ballot';
-import {
-  PHASE_TERMS,
-  ROLE_TERMS,
-  STATUS_TERMS,
-  bilingual,
-  formatTime,
-} from '../../core/i18n/terms';
+import { PHASE_TERMS, ROLE_TERMS, STATUS_TERMS } from '../../core/i18n/terms';
 import type { MessageSummary } from '../../core/paxos/types';
+import { useI18n } from '../../i18n/useI18n';
 import { useSimulationStore } from '../../store/simulation-store';
 
 function Field({ label, value }: { label: string; value: string | number }) {
@@ -19,17 +14,18 @@ function Field({ label, value }: { label: string; value: string | number }) {
 }
 
 function MessageList({ items, empty }: { items: MessageSummary[]; empty: string }) {
+  const { messageType, time } = useI18n();
   if (items.length === 0) return <p className="hint small">{empty}</p>;
   return (
     <ul className="message-list">
       {items.slice(-6).map((item, index) => (
         <li key={`${item.type}-${item.peer}-${item.at}-${index}`}>
-          <span className={`msg-tag msg-${item.type}`}>{item.type}</span>
+          <span className={`msg-tag msg-${item.type}`}>{messageType(item.type)}</span>
           <span className="msg-peer">
             {item.peer} · {formatBallot(item.ballot)}
           </span>
           {item.value !== null && <span className="msg-value">{item.value}</span>}
-          <span className="msg-time">{formatTime(item.at)}</span>
+          <span className="msg-time">{time(item.at)}</span>
         </li>
       ))}
     </ul>
@@ -42,7 +38,7 @@ export function NodeInspector() {
   const crash = useSimulationStore((store) => store.crash);
   const recover = useSimulationStore((store) => store.recover);
   const retry = useSimulationStore((store) => store.retry);
-  const showPersian = useSimulationStore((store) => store.showPersian);
+  const { t, term } = useI18n();
 
   const proposer = state.proposers.find((node) => node.id === selectedNodeId);
   const acceptor = state.acceptors.find((node) => node.id === selectedNodeId);
@@ -52,9 +48,9 @@ export function NodeInspector() {
     return (
       <section className="panel inspector-panel">
         <div className="panel-head compact">
-          <h2>Node inspector</h2>
+          <h2>{t('nodeInspector')}</h2>
         </div>
-        <p className="hint">Select a node in the network to inspect its internal protocol state.</p>
+        <p className="hint">{t('selectNodeHint')}</p>
       </section>
     );
   }
@@ -68,21 +64,21 @@ export function NodeInspector() {
       <div className="panel-head compact">
         <div>
           <h2>
-            {selectedNodeId} <span className="role-tag">{bilingual(ROLE_TERMS[role], showPersian)}</span>
+            {selectedNodeId} <span className="role-tag">{term(ROLE_TERMS[role])}</span>
           </h2>
           <p className="panel-sub">
-            Status: <strong className={`text-${status}`}>{STATUS_TERMS[status].en}</strong>
+            {t('statusLabel')} <strong className={`text-${status}`}>{term(STATUS_TERMS[status])}</strong>
           </p>
         </div>
         <div className="inspector-actions">
           {(status === 'crashed' || status === 'recovering') && (
             <button type="button" className="btn btn-small" onClick={() => recover(selectedNodeId)}>
-              Recover
+              {t('recover')}
             </button>
           )}
           {status === 'active' && (
             <button type="button" className="btn btn-small danger" onClick={() => crash(selectedNodeId)}>
-              Crash
+              {t('crash')}
             </button>
           )}
         </div>
@@ -90,19 +86,19 @@ export function NodeInspector() {
 
       {proposer && (
         <div className="field-grid">
-          <Field label="Proposer ID" value={proposer.id} />
-          <Field label="Current ballot" value={formatBallot(proposer.ballot)} />
-          <Field label="Proposed value" value={proposer.proposedValue} />
-          <Field label="Promises" value={`${proposer.promises.length} / ${state.quorum}`} />
-          <Field label="Accepted responses" value={`${proposer.accepts.length} / ${state.quorum}`} />
-          <Field label="Quorum requirement" value={state.quorum} />
+          <Field label={t('proposerId')} value={proposer.id} />
+          <Field label={t('currentBallot')} value={formatBallot(proposer.ballot)} />
+          <Field label={t('proposedValueField')} value={proposer.proposedValue} />
+          <Field label={t('promisesField')} value={`${proposer.promises.length} / ${state.quorum}`} />
           <Field
-            label="Current phase"
-            value={bilingual(PHASE_TERMS[proposer.phase], showPersian)}
+            label={t('acceptedResponsesField')}
+            value={`${proposer.accepts.length} / ${state.quorum}`}
           />
-          <Field label="Selected value" value={proposer.selectedValue ?? '—'} />
-          <Field label="Retries" value={proposer.retries} />
-          <Field label="NACKs received" value={proposer.nacks.length} />
+          <Field label={t('quorumRequirement')} value={state.quorum} />
+          <Field label={t('currentPhase')} value={term(PHASE_TERMS[proposer.phase])} />
+          <Field label={t('selectedValue')} value={proposer.selectedValue ?? '—'} />
+          <Field label={t('retries')} value={proposer.retries} />
+          <Field label={t('nacksReceived')} value={proposer.nacks.length} />
           {proposer.phase !== 'chosen' && (
             <button
               type="button"
@@ -110,7 +106,7 @@ export function NodeInspector() {
               onClick={() => retry(proposer.id)}
               disabled={proposer.status !== 'active'}
             >
-              Retry with higher ballot
+              {t('retryHigherBallot')}
             </button>
           )}
         </div>
@@ -119,26 +115,26 @@ export function NodeInspector() {
       {acceptor && (
         <>
           <div className="field-grid">
-            <Field label="Acceptor ID" value={acceptor.id} />
-            <Field label="Promised ballot" value={formatBallot(acceptor.promisedBallot)} />
-            <Field label="Accepted ballot" value={formatBallot(acceptor.acceptedBallot)} />
-            <Field label="Accepted value" value={acceptor.acceptedValue ?? '—'} />
-            <Field label="Node status" value={STATUS_TERMS[acceptor.status].en} />
+            <Field label={t('acceptorId')} value={acceptor.id} />
+            <Field label={t('promisedBallot')} value={formatBallot(acceptor.promisedBallot)} />
+            <Field label={t('acceptedBallot')} value={formatBallot(acceptor.acceptedBallot)} />
+            <Field label={t('acceptedValue')} value={acceptor.acceptedValue ?? '—'} />
+            <Field label={t('nodeStatus')} value={term(STATUS_TERMS[acceptor.status])} />
           </div>
-          <h3 className="sub-head">Received messages</h3>
-          <MessageList items={acceptor.received} empty="No messages received yet." />
-          <h3 className="sub-head">Sent responses</h3>
-          <MessageList items={acceptor.sent} empty="No responses sent yet." />
+          <h3 className="sub-head">{t('receivedMessages')}</h3>
+          <MessageList items={acceptor.received} empty={t('emptyReceived')} />
+          <h3 className="sub-head">{t('sentResponses')}</h3>
+          <MessageList items={acceptor.sent} empty={t('emptySent')} />
         </>
       )}
 
       {learner && (
         <>
           <div className="field-grid">
-            <Field label="Learner ID" value={learner.id} />
-            <Field label="Accepted messages" value={learner.received.length} />
+            <Field label={t('learnerId')} value={learner.id} />
+            <Field label={t('acceptedMessages')} value={learner.received.length} />
             <Field
-              label="Accepted proposal"
+              label={t('acceptedProposal')}
               value={
                 learner.chosenBallot
                   ? `${formatBallot(learner.chosenBallot)} · ${learner.chosenValue ?? '—'}`
@@ -147,10 +143,10 @@ export function NodeInspector() {
                     : '—'
               }
             />
-            <Field label="Detected chosen value" value={learner.chosenValue ?? '—'} />
+            <Field label={t('detectedChosen')} value={learner.chosenValue ?? '—'} />
           </div>
-          <h3 className="sub-head">Received messages</h3>
-          <MessageList items={learner.received} empty="No Accepted messages yet." />
+          <h3 className="sub-head">{t('receivedMessages')}</h3>
+          <MessageList items={learner.received} empty={t('emptyLearned')} />
         </>
       )}
     </section>

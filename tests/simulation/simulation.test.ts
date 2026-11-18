@@ -100,15 +100,15 @@ describe('reversible simulation', () => {
 describe('protocol status', () => {
   it('reports phases, consensus and stalls', () => {
     const initial = createSim();
-    expect(describeProtocol(initial)).toEqual({ label: 'Ready', tone: 'idle' });
+    expect(describeProtocol(initial)).toEqual({ key: 'ready', tone: 'idle' });
 
     const finished = runToCompletion(initial);
-    expect(describeProtocol(finished)).toEqual({ label: 'Chosen: alpha', tone: 'success' });
+    expect(describeProtocol(finished)).toEqual({ key: 'chosen', value: 'alpha', tone: 'success' });
 
     let stalled: SimulationState = crashNode(createSim(), 'A2');
     stalled = crashNode(stalled, 'A3');
     stalled = runToCompletion(stalled);
-    expect(describeProtocol(stalled)).toEqual({ label: 'Stalled — no quorum', tone: 'error' });
+    expect(describeProtocol(stalled)).toEqual({ key: 'stalled', tone: 'error' });
   });
 
   it('exposes a smooth recovery state before the node becomes active', () => {

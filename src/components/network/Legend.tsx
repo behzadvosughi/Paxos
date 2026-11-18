@@ -1,5 +1,6 @@
 import { MESSAGE_META, type PacketShape } from '../../core/i18n/terms';
 import type { MessageType } from '../../core/paxos/types';
+import { useI18n } from '../../i18n/useI18n';
 
 const ORDER: MessageType[] = ['prepare', 'promise', 'accept', 'accepted', 'nack'];
 
@@ -18,16 +19,17 @@ function MiniShape({ shape, color }: { shape: PacketShape; color: string }) {
   );
 }
 
-export function Legend({ showPersian }: { showPersian: boolean }) {
+export function Legend() {
+  const { term, messageType } = useI18n();
+
   return (
     <div className="legend">
       {ORDER.map((type) => {
         const meta = MESSAGE_META[type];
         return (
-          <span className="legend-item" key={type} title={meta.hint}>
+          <span className="legend-item" key={type} title={term(meta.hint)}>
             <MiniShape shape={meta.shape} color={meta.color} />
-            {meta.en}
-            {showPersian && <em className="fa">{meta.fa}</em>}
+            {messageType(type)}
           </span>
         );
       })}

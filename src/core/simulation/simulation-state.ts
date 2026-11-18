@@ -1,3 +1,4 @@
+import type { EventText } from '../i18n/events';
 import { createRngState } from '../network/rng';
 import { pushEvent, type SimEvent } from '../network/event-queue';
 import type { Message } from '../network/message';
@@ -77,9 +78,10 @@ export interface LogEntry {
   nodeId: string | null;
   packetId: string | null;
   title: string;
-  description: string;
+  /** language-neutral description, rendered by the interface */
+  description: EventText;
   /** why it happened, in plain language */
-  explanation: string;
+  explanation: EventText;
 }
 
 export interface SimulationState {
@@ -96,7 +98,7 @@ export interface SimulationState {
   queue: SimEvent[];
   log: LogEntry[];
   chosen: { ballot: Ballot; value: string; at: number } | null;
-  safetyViolation: string | null;
+  safetyViolation: { first: string; second: string } | null;
   disabledLinks: string[];
   partitionEnabled: boolean;
   partitionGroupA: string[];

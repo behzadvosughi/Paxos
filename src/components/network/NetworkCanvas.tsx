@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { linkBlockReason } from '../../core/network/network-engine';
+import { useI18n } from '../../i18n/useI18n';
 import { useSimulationStore } from '../../store/simulation-store';
 import {
   CANVAS_HEIGHT,
@@ -14,10 +15,10 @@ export function NetworkCanvas() {
   const state = useSimulationStore((store) => store.state);
   const selectedNodeId = useSimulationStore((store) => store.selectedNodeId);
   const selectedPacketId = useSimulationStore((store) => store.selectedPacketId);
-  const showPersian = useSimulationStore((store) => store.showPersian);
   const selectNode = useSimulationStore((store) => store.selectNode);
   const selectPacket = useSimulationStore((store) => store.selectPacket);
   const toggleLink = useSimulationStore((store) => store.toggleLink);
+  const { t, reason } = useI18n();
 
   const { nodes, links } = useMemo(() => computeTopology(state), [state]);
 
@@ -27,21 +28,24 @@ export function NetworkCanvas() {
     <section className="panel canvas-panel">
       <div className="panel-head">
         <div>
-          <h2>Network</h2>
+          <h2>{t('network')}</h2>
           <p className="panel-sub">
-            {state.proposers.length} proposer(s) · {state.acceptors.length} acceptor(s) ·{' '}
-            {state.learners.length} learner(s)
+            {t('networkSummary', {
+              proposers: state.proposers.length,
+              acceptors: state.acceptors.length,
+              learners: state.learners.length,
+            })}
           </p>
         </div>
         <div className="canvas-metrics">
           <span className="metric">
-            <strong>{state.quorum}</strong> quorum
+            <strong>{state.quorum}</strong> {t('metricQuorum')}
           </span>
           <span className="metric">
-            <strong>{accepted}</strong> accepted
+            <strong>{accepted}</strong> {t('metricAccepted')}
           </span>
           <span className="metric">
-            <strong>{state.stats.dropped}</strong> dropped
+            <strong>{state.stats.dropped}</strong> {t('metricDropped')}
           </span>
         </div>
       </div>
@@ -51,7 +55,7 @@ export function NetworkCanvas() {
           className="network-svg"
           viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
           role="img"
-          aria-label="Distributed system topology"
+          aria-label={t('canvasAria')}
           onClick={() => selectNode(null)}
         >
           <defs>
@@ -106,7 +110,13 @@ export function NetworkCanvas() {
                     </text>
                   )}
                   <title>
-                    {link.endpointA} ↔ {link.endpointB} {blocked ? `· ${blocked}` : '· click to disable'}
+                    {blocked
+                      ? t('linkTooltipBlocked', {
+                          a: link.endpointA,
+                          b: link.endpointB,
+                          reason: reason(blocked),
+                        })
+                      : t('linkTooltip', { a: link.endpointA, b: link.endpointB })}
                   </title>
                 </g>
               );
@@ -115,13 +125,7 @@ export function NetworkCanvas() {
 
           <g className="nodes">
             {nodes.map((node) => (
-              <NodeCard
-                key={node.id}
-                node={node}
-                selected={node.id === selectedNodeId}
-                showPersian={showPersian}
-                onSelect={selectNode}
-              />
+              <NodeCard key={node.id} node={node} selected={node.id === selectedNodeId} onSelect={selectNode} />
             ))}
           </g>
 
@@ -135,8 +139,8 @@ export function NetworkCanvas() {
       </div>
 
       <div className="canvas-foot">
-        <Legend showPersian={showPersian} />
-        <span className="canvas-hint">Click a node, packet or link to inspect it</span>
+        <Legend />
+        <span className="canvas-hint">{t('canvasHint')}</span>
       </div>
     </section>
   );

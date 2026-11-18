@@ -1,4 +1,5 @@
-import { compareBallots, formatBallot, maxBallot } from './ballot';
+import { compareBallots, maxBallot } from './ballot';
+import type { ReasonInfo } from '../i18n/reason';
 import type { AcceptorState, Ballot } from './types';
 
 export type AcceptorReply =
@@ -9,7 +10,7 @@ export type AcceptorReply =
       acceptedValue: string | null;
     }
   | { kind: 'accepted'; ballot: Ballot; value: string }
-  | { kind: 'nack'; ballot: Ballot; reason: string };
+  | { kind: 'nack'; ballot: Ballot; reason: ReasonInfo };
 
 export interface AcceptorResult {
   acceptor: AcceptorState;
@@ -36,7 +37,7 @@ export function onPrepare(acceptor: AcceptorState, ballot: Ballot): AcceptorResu
       reply: {
         kind: 'nack',
         ballot,
-        reason: `already promised ${formatBallot(acceptor.promisedBallot)}`,
+        reason: { code: 'alreadyPromised', ballot: acceptor.promisedBallot },
       },
     };
   }
@@ -65,7 +66,7 @@ export function onAccept(acceptor: AcceptorState, ballot: Ballot, value: string)
       reply: {
         kind: 'nack',
         ballot,
-        reason: `promised ${formatBallot(acceptor.promisedBallot)}`,
+        reason: { code: 'promisedHigher', ballot: acceptor.promisedBallot },
       },
     };
   }

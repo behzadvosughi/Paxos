@@ -1,5 +1,7 @@
 # Paxos Protocol Explorer
 
+**English · [فارسی](README.fa.md)**
+
 An interactive, **fully client-side** visual explorer for the Basic Paxos distributed consensus
 algorithm. Configure a small cluster of proposers, acceptors and learners, run the protocol step by
 step, watch real protocol messages fly across the network as animated packets, crash nodes, cut
@@ -100,7 +102,7 @@ src/
 │   │   ├── simulation-state.ts     # full state + factory from configuration
 │   │   ├── simulation-engine.ts    # event processing, failures, partitions
 │   │   └── snapshot-manager.ts     # bounded history for step-backward
-│   └── i18n/terms.ts               # English/Persian terminology + concepts
+│   └── i18n/                        # English/Persian dictionaries (UI, events, reasons)
 ├── visualization/
 │   ├── animation-clock.ts          # display clock, separate from protocol time
 │   └── topology.ts                 # node/link geometry, packet positions
@@ -368,8 +370,9 @@ Verification performed in this repository:
   mode is an intentionally exaggerated experiment.
 - **Visual scale.** With 9 acceptors and 3 proposers the canvas is dense; packet lanes reduce
   overlap but a larger viewport helps.
-- **Localisation** covers protocol terminology, node roles, statuses and phases (English + Persian).
-  Full UI translation would extend `src/core/i18n/terms.ts`.
+- **Localisation** covers the whole interface: labels, tooltips, event-log sentences, rejection and
+  drop reasons, node captions (English + Persian, with RTL layout for Persian). Adding a third
+  language means extending the dictionaries in `src/core/i18n/`.
 - No end-to-end browser automation in CI; the UI is covered by React Testing Library in jsdom.
 
 ## Roadmap
@@ -379,7 +382,6 @@ Verification performed in this repository:
 - Learner catch-up messages (`learn` RPC) instead of acceptor fan-out.
 - Timeline filtering and export of a run as JSON.
 - Shareable permalinks (configuration encoded in the URL hash).
-- Full localisation including RTL layout for Persian.
 - Playback "replay from here" and snapshot branching.
 
 ---

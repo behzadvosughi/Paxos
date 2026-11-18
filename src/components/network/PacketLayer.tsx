@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { MESSAGE_META, type PacketShape } from '../../core/i18n/terms';
 import { isPacketVisible, packetProgress, type Message } from '../../core/network/message';
+import { useI18n } from '../../i18n/useI18n';
 import { getAnimationTime, subscribeAnimationClock } from '../../visualization/animation-clock';
 import { laneFor, packetPosition, type NodeLayout } from '../../visualization/topology';
 
@@ -35,6 +36,7 @@ function Shape({ shape, color }: { shape: PacketShape; color: string }) {
  */
 export function PacketLayer({ messages, nodes, selectedPacketId, onSelect }: PacketLayerProps) {
   const refs = useRef(new Map<string, SVGGElement>());
+  const { messageType } = useI18n();
 
   const positions = useMemo(() => {
     const map = new Map<string, { x: number; y: number }>();
@@ -86,6 +88,7 @@ export function PacketLayer({ messages, nodes, selectedPacketId, onSelect }: Pac
     <g className="packet-layer">
       {rendered.map((message) => {
         const meta = MESSAGE_META[message.type];
+        const typeLabel = messageType(message.type);
         const selected = message.id === selectedPacketId;
         return (
           <g
@@ -97,7 +100,7 @@ export function PacketLayer({ messages, nodes, selectedPacketId, onSelect }: Pac
             className={`packet packet-${message.type}${selected ? ' packet-selected' : ''}${
               message.status === 'dropped' ? ' packet-dropped' : ''
             }`}
-            aria-label={`${meta.en} from ${message.from} to ${message.to}`}
+            aria-label={`${typeLabel} ${message.from} → ${message.to}`}
           >
             {selected && <circle r={14} className="packet-selection" />}
             <Shape shape={meta.shape} color={meta.color} />
@@ -110,7 +113,7 @@ export function PacketLayer({ messages, nodes, selectedPacketId, onSelect }: Pac
               }}
             />
             <title>
-              {meta.en} · {message.from} → {message.to}
+              {typeLabel} · {message.from} → {message.to}
             </title>
           </g>
         );

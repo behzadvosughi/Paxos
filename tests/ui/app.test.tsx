@@ -27,7 +27,7 @@ describe('Paxos Protocol Explorer UI', () => {
 
   it('opens the node inspector when a node is selected', () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: /A1 acceptor/i }));
+    fireEvent.click(screen.getByRole('button', { name: /A1 · acceptor/i }));
     expect(screen.getByText(/promised ballot/i)).toBeInTheDocument();
     expect(screen.getByText(/sent responses/i)).toBeInTheDocument();
   });

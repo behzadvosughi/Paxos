@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { peekEvent } from '../core/network/event-queue';
+import { isRtl } from '../core/i18n/lang';
+import { useI18n } from '../i18n/useI18n';
 import { useSimulationStore } from '../store/simulation-store';
 import { getAnimationTime, setAnimationTime } from '../visualization/animation-clock';
 import { Header } from '../components/layout/Header';
@@ -62,8 +64,21 @@ function usePlayback(): void {
   }, [isPlaying, speed]);
 }
 
+/** Keep the document language and writing direction in sync with the UI. */
+function useDocumentLanguage(): void {
+  const lang = useSimulationStore((store) => store.language);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.lang = lang;
+    root.dir = isRtl(lang) ? 'rtl' : 'ltr';
+  }, [lang]);
+}
+
 export function App() {
   usePlayback();
+  useDocumentLanguage();
+  const { t } = useI18n();
 
   return (
     <div className="app-shell">
@@ -85,10 +100,7 @@ export function App() {
           <PacketInspector />
         </aside>
       </main>
-      <footer className="app-footer">
-        Basic Paxos consensus simulator · runs entirely in your browser · no backend, no external
-        API
-      </footer>
+      <footer className="app-footer">{t('footer')}</footer>
     </div>
   );
 }

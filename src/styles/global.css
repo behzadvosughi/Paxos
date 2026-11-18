@@ -347,3 +347,55 @@ select {
 .text-unavailable {
   color: var(--faint);
 }
+
+/* ---------- language switch & RTL ---------- */
+
+.lang-switch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.lang-switch .btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 7px;
+}
+
+.lang-switch .btn-lang {
+  border: 1px solid transparent;
+}
+
+.lang-switch .btn-lang.btn-active {
+  color: var(--text);
+  background: rgba(90, 169, 255, 0.12);
+  border-color: rgba(90, 169, 255, 0.35);
+}
+
+/* Persian is a joined script: letter-spacing pulls the letters apart. */
+[dir='rtl'] .panel-head h2,
+[dir='rtl'] .explanation-label,
+[dir='rtl'] .node-role,
+[dir='rtl'] .unsafe-label,
+[dir='rtl'] .timeline-kind,
+[dir='rtl'] .field-key,
+[dir='rtl'] .node-chip,
+[dir='rtl'] .brand h1 {
+  letter-spacing: 0;
+}
+
+[dir='rtl'] .quorum-fill {
+  background: linear-gradient(270deg, #2563eb, #5aa9ff);
+}
+
+[dir='rtl'] .quorum-fill.full {
+  background: linear-gradient(270deg, #059669, #34d399);
+}
+
+/* Directional glyphs keep their own ordering inside RTL text. */
+.glyph {
+  unicode-bidi: isolate;
+}

@@ -1,5 +1,6 @@
-import { MESSAGE_META, formatTime } from '../../core/i18n/terms';
 import { formatBallot } from '../../core/paxos/ballot';
+import { MESSAGE_META } from '../../core/i18n/terms';
+import { useI18n } from '../../i18n/useI18n';
 import { useSimulationStore } from '../../store/simulation-store';
 
 function Field({ label, value }: { label: string; value: string }) {
@@ -14,7 +15,7 @@ function Field({ label, value }: { label: string; value: string }) {
 export function PacketInspector() {
   const state = useSimulationStore((store) => store.state);
   const selectedPacketId = useSimulationStore((store) => store.selectedPacketId);
-  const showPersian = useSimulationStore((store) => store.showPersian);
+  const { t, term, time, reason, messageType } = useI18n();
 
   const packet = state.messages.find((message) => message.id === selectedPacketId);
 
@@ -22,69 +23,75 @@ export function PacketInspector() {
     return (
       <section className="panel inspector-panel">
         <div className="panel-head compact">
-          <h2>Packet inspector</h2>
+          <h2>{t('packetInspector')}</h2>
         </div>
-        <p className="hint">
-          Click a travelling packet (or an event in the timeline) to inspect its payload,
-          transmission and delivery status.
-        </p>
+        <p className="hint">{t('packetHint')}</p>
       </section>
     );
   }
 
+  const typeLabel = messageType(packet.type);
   const meta = MESSAGE_META[packet.type];
   const payload = JSON.stringify(
     {
-      type: packet.type,
+      type: typeLabel,
       ballot: formatBallot(packet.ballot),
       value: packet.value,
       acceptedBallot: packet.acceptedBallot ? formatBallot(packet.acceptedBallot) : null,
       acceptedValue: packet.acceptedValue,
-      ...(packet.reason ? { reason: packet.reason } : {}),
+      ...(packet.reason ? { reason: reason(packet.reason) } : {}),
     },
     null,
     2,
   );
 
   const transmission =
-    packet.status === 'inflight' ? 'In flight' : packet.status === 'delivered' ? 'Delivered' : 'Lost';
+    packet.status === 'inflight'
+      ? t('inFlight')
+      : packet.status === 'delivered'
+        ? t('delivered')
+        : t('lost');
 
   return (
     <section className="panel inspector-panel">
       <div className="panel-head compact">
         <h2>
-          Packet <span className="mono">{packet.id}</span>
+          {t('packet')} <span className="mono">{packet.id}</span>
         </h2>
         <span className="packet-type" style={{ color: meta.color }}>
-          {meta.en}
-          {showPersian ? ` · ${meta.fa}` : ''}
+          {typeLabel}
         </span>
       </div>
 
       <div className="field-grid">
-        <Field label="Message type" value={meta.en} />
-        <Field label="Source node" value={packet.from} />
-        <Field label="Destination node" value={packet.to} />
-        <Field label="Proposal number" value={formatBallot(packet.ballot)} />
-        <Field label="Value" value={packet.value ?? '—'} />
-        <Field label="Created at" value={formatTime(packet.sentAt)} />
-        <Field label="Transmission" value={transmission} />
+        <Field label={t('messageType')} value={typeLabel} />
+        <Field label={t('sourceNode')} value={packet.from} />
+        <Field label={t('destinationNode')} value={packet.to} />
+        <Field label={t('proposalNumber')} value={formatBallot(packet.ballot)} />
+        <Field label={t('valueField')} value={packet.value ?? '—'} />
+        <Field label={t('createdAt')} value={time(packet.sentAt)} />
+        <Field label={t('transmission')} value={transmission} />
         <Field
-          label="Delivery"
+          label={t('delivery')}
           value={
             packet.status === 'delivered'
-              ? `at ${formatTime(packet.arriveAt)}`
+              ? t('deliveredAt', { time: time(packet.arriveAt) })
               : packet.status === 'dropped'
-                ? `dropped — ${packet.dropReason ?? 'unknown'}`
-                : `expected ${formatTime(packet.arriveAt)}`
+                ? t('droppedAt', {
+                    reason: reason(packet.dropReason ?? { code: 'rejected' }),
+                  })
+                : t('expectedAt', { time: time(packet.arriveAt) })
           }
         />
-        <Field label="Network latency" value={`${Math.round(packet.arriveAt - packet.sentAt)} ms`} />
+        <Field
+          label={t('networkLatency')}
+          value={time(packet.arriveAt - packet.sentAt)}
+        />
       </div>
 
-      <h3 className="sub-head">Payload</h3>
+      <h3 className="sub-head">{t('payload')}</h3>
       <pre className="payload">{payload}</pre>
-      <p className="hint small">{meta.hint}</p>
+      <p className="hint small">{term(meta.hint)}</p>
     </section>
   );
 }

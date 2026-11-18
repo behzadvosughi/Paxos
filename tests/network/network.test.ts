@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { peekEvent } from '../../src/core/network/event-queue';
 import {
   LINK_DISABLED,
+  PACKET_LOSS,
   PARTITIONED,
   linkBlockReason,
   planTransmission,
@@ -58,7 +59,7 @@ describe('transmission planning', () => {
       blockedReason: null,
     });
     expect(plan.dropped).toBe(true);
-    expect(plan.reason).toBe('packet loss');
+    expect(plan.reason).toBe(PACKET_LOSS);
     expect(plan.dropAt).not.toBeNull();
   });
 
@@ -141,7 +142,9 @@ describe('packet lifecycle', () => {
   it('drops packets when their destination is crashed', () => {
     let state = crashNode(createSim(), 'A1');
     state = runToCompletion(state);
-    expect(state.messages.some((message) => message.dropReason?.includes('crashed'))).toBe(true);
+    expect(
+      state.messages.some((message) => message.dropReason?.code === 'nodeNotActive'),
+    ).toBe(true);
     expect(state.acceptors[0].acceptedValue).toBeNull();
     expect(state.chosen?.value).toBe('alpha');
   });
@@ -162,7 +165,9 @@ describe('packet lifecycle', () => {
   it('fails messages on a disabled link', () => {
     let state = toggleLinkFailure(createSim(), 'P1', 'A1');
     state = runToCompletion(state);
-    expect(state.messages.some((message) => message.dropReason === LINK_DISABLED)).toBe(true);
+    expect(
+      state.messages.some((message) => message.dropReason?.code === LINK_DISABLED.code),
+    ).toBe(true);
     // Two remaining acceptors still form a quorum of three.
     expect(state.chosen?.value).toBe('alpha');
   });
@@ -172,7 +177,9 @@ describe('packet lifecycle', () => {
     state = runToCompletion(state);
     expect(state.partitionEnabled).toBe(true);
     expect(state.chosen).toBeNull();
-    expect(state.messages.some((message) => message.dropReason === PARTITIONED)).toBe(true);
+    expect(
+      state.messages.some((message) => message.dropReason?.code === PARTITIONED.code),
+    ).toBe(true);
   });
 });
 

@@ -1,3 +1,4 @@
+import type { ReasonInfo } from '../i18n/reason';
 import type { Ballot, MessageType, PacketStatus } from '../paxos/types';
 
 /**
@@ -15,13 +16,13 @@ export interface Message {
   acceptedBallot: Ballot | null;
   acceptedValue: string | null;
   /** reason attached to a NACK */
-  reason: string | null;
+  reason: ReasonInfo | null;
   sentAt: number;
   arriveAt: number;
   status: PacketStatus;
   /** virtual time at which a dropped packet visually vanishes */
   dropAt: number | null;
-  dropReason: string | null;
+  dropReason: ReasonInfo | null;
 }
 
 export function isPacketVisible(message: Message, time: number): boolean {

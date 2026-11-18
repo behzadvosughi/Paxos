@@ -1,4 +1,4 @@
-import { formatTime } from '../../core/i18n/terms';
+import { useI18n } from '../../i18n/useI18n';
 import { useSimulationStore } from '../../store/simulation-store';
 
 export function SimulationControls() {
@@ -11,6 +11,7 @@ export function SimulationControls() {
   const reset = useSimulationStore((store) => store.reset);
   const setSpeed = useSimulationStore((store) => store.setSpeed);
   const canStepBack = useSimulationStore((store) => store.canStepBack());
+  const { t, time } = useI18n();
 
   const hasNext = state.queue.length > 0;
 
@@ -30,39 +31,44 @@ export function SimulationControls() {
   return (
     <section className="panel controls-panel">
       <div className="panel-head compact">
-        <h2>Simulation</h2>
-        <span className="clock">{formatTime(state.virtualTime)}</span>
+        <h2>{t('simulation')}</h2>
+        <span className="clock">{time(state.virtualTime)}</span>
       </div>
 
       <div className="transport">
-        <button type="button" className="btn btn-primary" onClick={togglePlay} disabled={!hasNext && !isPlaying}>
-          {isPlaying ? '❙❙ Pause' : '▶ Play'}
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={togglePlay}
+          disabled={!hasNext && !isPlaying}
+        >
+          <span className="glyph">{isPlaying ? '❙❙' : '▶'}</span> {isPlaying ? t('pause') : t('play')}
         </button>
         <button
           type="button"
           className="btn"
           onClick={stepBackward}
           disabled={!canStepBack}
-          title="Restore the previous deterministic snapshot"
+          title={t('stepBackTitle')}
         >
-          ◀ Step
+          <span className="glyph">◀</span> {t('stepBack')}
         </button>
         <button
           type="button"
           className="btn"
           onClick={stepForward}
           disabled={!hasNext}
-          title="Process exactly one simulation event"
+          title={t('stepForwardTitle')}
         >
-          Step ▶
+          {t('stepBack')} <span className="glyph">▶</span>
         </button>
         <button type="button" className="btn btn-ghost" onClick={reset}>
-          ⟲ Reset
+          <span className="glyph">⟲</span> {t('reset')}
         </button>
       </div>
 
       <div className="speed-row">
-        <label htmlFor="speed">Animation speed</label>
+        <label htmlFor="speed">{t('animationSpeed')}</label>
         <input
           id="speed"
           type="range"
@@ -78,7 +84,9 @@ export function SimulationControls() {
       <div className="quorum-row">
         <div className="quorum-label">
           <span>
-            {phase === 'accepting' || phase === 'chosen' ? 'Accepted responses' : 'Promises'}
+            {phase === 'accepting' || phase === 'chosen'
+              ? t('acceptedResponses')
+              : t('promises')}
             {proposer ? ` · ${proposer.id}` : ''}
           </span>
           <span className="mono">
@@ -93,7 +101,10 @@ export function SimulationControls() {
           <div className="quorum-marker" style={{ left: '100%' }} />
         </div>
         <p className="hint">
-          quorum = floor({state.acceptors.length} / 2) + 1 = {state.quorum}
+          {t('quorumFormula', {
+            acceptors: state.acceptors.length,
+            quorum: state.quorum,
+          })}
         </p>
       </div>
     </section>

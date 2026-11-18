@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { formatEventText } from '../../src/core/i18n/events';
 import { onAccept, onPrepare } from '../../src/core/paxos/acceptor';
 import { compareBallots, createBallot, equalBallots, formatBallot } from '../../src/core/paxos/ballot';
 import { detectChosen, findQuorumValues } from '../../src/core/paxos/protocol-engine';
@@ -284,7 +285,9 @@ describe('end-to-end Basic Paxos', () => {
     expect(state.log.some((entry) => entry.kind === 'nack')).toBe(true);
 
     const chosenValues = new Set(
-      state.log.filter((entry) => entry.kind === 'chosen').map((entry) => entry.description),
+      state.log
+        .filter((entry) => entry.kind === 'chosen')
+        .map((entry) => formatEventText(entry.description, 'en')),
     );
     expect(chosenValues.size).toBe(1);
   });
@@ -332,7 +335,10 @@ describe('safety properties', () => {
 
       const chosenEntries = state.log.filter((entry) => entry.kind === 'chosen');
       const values = new Set(
-        chosenEntries.map((entry) => entry.description.match(/"([^"]+)"/)?.[1] ?? entry.id),
+        chosenEntries.map(
+          (entry) =>
+            formatEventText(entry.description, 'en').match(/“([^”]+)”/)?.[1] ?? entry.id,
+        ),
       );
       expect(values.size).toBeLessThanOrEqual(1);
     }

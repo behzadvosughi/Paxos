@@ -1,3 +1,4 @@
+import type { ReasonInfo } from '../i18n/reason';
 import { draw } from './rng';
 
 /**
@@ -14,19 +15,20 @@ export interface TransmissionInput {
   packetLoss: number;
   rngState: number;
   /** non-null when the link itself blocks the message (disabled / partitioned) */
-  blockedReason: string | null;
+  blockedReason: ReasonInfo | null;
 }
 
 export interface TransmissionPlan {
   dropped: boolean;
   arriveAt: number;
   dropAt: number | null;
-  reason: string | null;
+  reason: ReasonInfo | null;
   rngState: number;
 }
 
-export const LINK_DISABLED = 'link disabled';
-export const PARTITIONED = 'network partition';
+export const LINK_DISABLED: ReasonInfo = { code: 'linkDisabled' };
+export const PARTITIONED: ReasonInfo = { code: 'partition' };
+export const PACKET_LOSS: ReasonInfo = { code: 'packetLoss' };
 
 export function linkKey(from: string, to: string): string {
   return `${from}->${to}`;
@@ -42,7 +44,7 @@ export function linkBlockReason(
   disabledLinks: string[],
   partitionEnabled: boolean,
   partitionGroupA: string[],
-): string | null {
+): ReasonInfo | null {
   if (disabledLinks.includes(linkKey(from, to)) || disabledLinks.includes(linkKey(to, from))) {
     return LINK_DISABLED;
   }
@@ -77,7 +79,7 @@ export function planTransmission(input: TransmissionInput): TransmissionPlan {
       dropped: true,
       arriveAt,
       dropAt: input.now + travel * 0.55,
-      reason: 'packet loss',
+      reason: PACKET_LOSS,
       rngState: jitterDraw.state,
     };
   }

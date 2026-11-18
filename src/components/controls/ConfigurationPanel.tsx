@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { STATUS_TERMS } from '../../core/i18n/terms';
 import type { SimulationConfig } from '../../core/simulation/simulation-state';
+import { useI18n } from '../../i18n/useI18n';
 import { useSimulationStore } from '../../store/simulation-store';
 
 function NumberField({
@@ -49,6 +50,7 @@ export function ConfigurationPanel() {
   const recover = useSimulationStore((store) => store.recover);
   const togglePartition = useSimulationStore((store) => store.togglePartition);
   const dropPackets = useSimulationStore((store) => store.dropPackets);
+  const { t, term } = useI18n();
 
   const [draft, setDraft] = useState<SimulationConfig>(config);
   useEffect(() => setDraft(config), [config]);
@@ -65,14 +67,14 @@ export function ConfigurationPanel() {
   return (
     <section className="panel config-panel">
       <div className="panel-head compact">
-        <h2>Configuration</h2>
-        {dirty && <span className="badge badge-warn">unsaved</span>}
+        <h2>{t('configuration')}</h2>
+        {dirty && <span className="badge badge-warn">{t('unsaved')}</span>}
       </div>
 
       <div className="config-section">
-        <h3>Network</h3>
+        <h3>{t('sectionNetwork')}</h3>
         <label className="field">
-          <span className="field-label">Acceptors</span>
+          <span className="field-label">{t('acceptors')}</span>
           <span className="field-input">
             <select
               value={draft.acceptorCount}
@@ -88,7 +90,7 @@ export function ConfigurationPanel() {
         </label>
 
         <label className="field">
-          <span className="field-label">Proposers</span>
+          <span className="field-label">{t('proposers')}</span>
           <span className="field-input">
             <select
               value={draft.proposerCount}
@@ -104,7 +106,7 @@ export function ConfigurationPanel() {
         </label>
 
         <label className="field">
-          <span className="field-label">Learners</span>
+          <span className="field-label">{t('learners')}</span>
           <span className="field-input">
             <select
               value={draft.learnerCount}
@@ -120,7 +122,7 @@ export function ConfigurationPanel() {
         </label>
 
         <NumberField
-          label="Network latency"
+          label={t('networkLatency')}
           value={draft.latency}
           onChange={(latency) => update({ latency })}
           min={20}
@@ -129,7 +131,7 @@ export function ConfigurationPanel() {
           suffix="ms"
         />
         <NumberField
-          label="Packet delay (jitter)"
+          label={t('packetDelay')}
           value={draft.packetDelay}
           onChange={(packetDelay) => update({ packetDelay })}
           min={0}
@@ -139,7 +141,7 @@ export function ConfigurationPanel() {
         />
 
         <label className="field">
-          <span className="field-label">Packet loss</span>
+          <span className="field-label">{t('packetLoss')}</span>
           <span className="field-input">
             <input
               type="range"
@@ -155,16 +157,16 @@ export function ConfigurationPanel() {
       </div>
 
       <div className="config-section">
-        <h3>Protocol</h3>
+        <h3>{t('sectionProtocol')}</h3>
         <NumberField
-          label="Proposal round"
+          label={t('proposalRound')}
           value={draft.proposalRound}
           onChange={(proposalRound) => update({ proposalRound })}
           min={1}
           max={99}
         />
         <label className="field">
-          <span className="field-label">Proposed value</span>
+          <span className="field-label">{t('proposedValue')}</span>
           <span className="field-input">
             <input
               type="text"
@@ -175,7 +177,7 @@ export function ConfigurationPanel() {
           </span>
         </label>
         <NumberField
-          label="Random seed"
+          label={t('randomSeed')}
           value={draft.seed}
           onChange={(seed) => update({ seed })}
           min={1}
@@ -187,33 +189,30 @@ export function ConfigurationPanel() {
             checked={draft.autoRetry}
             onChange={(event) => update({ autoRetry: event.target.checked })}
           />
-          <span className="field-label">Auto-retry after NACK</span>
+          <span className="field-label">{t('autoRetry')}</span>
         </label>
       </div>
 
       <button type="button" className="btn btn-primary btn-block" onClick={() => applyConfig(draft)}>
-        Apply &amp; restart
+        {t('applyRestart')}
       </button>
-      <p className="hint">
-        Structural changes restart the simulation from a clean state. Speed can be changed at any
-        time.
-      </p>
+      <p className="hint">{t('applyHint')}</p>
 
       <div className="config-section">
-        <h3>Failures</h3>
+        <h3>{t('sectionFailures')}</h3>
         <div className="node-failure-list">
           {nodes.map((node) => (
             <div className="node-failure-row" key={node.id}>
               <span className={`node-chip status-${node.status}`}>
-                {node.id} · {STATUS_TERMS[node.status].en}
+                {node.id} · {term(STATUS_TERMS[node.status])}
               </span>
               {node.status === 'crashed' || node.status === 'recovering' ? (
                 <button type="button" className="link-btn" onClick={() => recover(node.id)}>
-                  Recover
+                  {t('recover')}
                 </button>
               ) : (
                 <button type="button" className="link-btn danger" onClick={() => crash(node.id)}>
-                  Crash
+                  {t('crash')}
                 </button>
               )}
             </div>
@@ -225,12 +224,12 @@ export function ConfigurationPanel() {
           className={`btn btn-block${state.partitionEnabled ? ' btn-active' : ''}`}
           onClick={togglePartition}
         >
-          {state.partitionEnabled ? 'Heal network partition' : 'Simulate network partition'}
+          {state.partitionEnabled ? t('healPartition') : t('simulatePartition')}
         </button>
         <button type="button" className="btn btn-block btn-ghost" onClick={dropPackets}>
-          Drop all in-flight packets
+          {t('dropAllPackets')}
         </button>
-        <p className="hint">Click any link on the canvas to disable or restore it.</p>
+        <p className="hint">{t('linkHint')}</p>
 
         <label className="field field-inline">
           <input
@@ -239,8 +238,8 @@ export function ConfigurationPanel() {
             onChange={(event) => update({ unsafeRecover: event.target.checked })}
           />
           <span className="field-label">
-            Unsafe recovery: forget durable state
-            <em className="unsafe-label">intentionally unsafe</em>
+            {t('unsafeRecover')}
+            <em className="unsafe-label">{t('unsafeBadge')}</em>
           </span>
         </label>
       </div>

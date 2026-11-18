@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Lang } from '../core/i18n/lang';
 import { peekEvent } from '../core/network/event-queue';
 import {
   crashNode,
@@ -32,7 +33,7 @@ export type Store = {
   history: History;
   isPlaying: boolean;
   speed: number;
-  showPersian: boolean;
+  language: Lang;
   selectedNodeId: string | null;
   selectedPacketId: string | null;
   selectedEventId: string | null;
@@ -47,7 +48,7 @@ export type Store = {
   reset: () => void;
   applyConfig: (patch: Partial<SimulationConfig>) => void;
   setSpeed: (speed: number) => void;
-  togglePersian: () => void;
+  setLanguage: (language: Lang) => void;
   selectNode: (id: string | null) => void;
   selectPacket: (id: string | null) => void;
   selectEvent: (entry: LogEntry | null) => void;
@@ -90,7 +91,7 @@ export const useSimulationStore = create<Store>((set, get) => {
     history: createHistory(initial),
     isPlaying: false,
     speed: 1,
-    showPersian: false,
+    language: 'en',
     selectedNodeId: null,
     selectedPacketId: null,
     selectedEventId: null,
@@ -151,7 +152,7 @@ export const useSimulationStore = create<Store>((set, get) => {
 
     setSpeed: (speed) => set({ speed }),
 
-    togglePersian: () => set({ showPersian: !get().showPersian }),
+    setLanguage: (language) => set({ language }),
 
     selectNode: (id) => set({ selectedNodeId: id }),
 

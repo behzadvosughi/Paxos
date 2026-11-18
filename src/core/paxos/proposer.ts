@@ -1,3 +1,4 @@
+import type { ReasonInfo } from '../i18n/reason';
 import { compareBallots, equalBallots, formatBallot } from './ballot';
 import type { Ballot, NackInfo, PromiseInfo, ProposerState } from './types';
 
@@ -56,7 +57,7 @@ export function selectProposalValue(
 
 export function registerNack(
   proposer: ProposerState,
-  nack: { acceptorId: string; ballot: Ballot; reason: string; at: number },
+  nack: { acceptorId: string; ballot: Ballot; reason: ReasonInfo; at: number },
 ): ProposerState {
   if (!proposer.ballot || !equalBallots(proposer.ballot, nack.ballot)) return proposer;
   if (proposer.nacks.some((entry) => entry.acceptorId === nack.acceptorId)) return proposer;

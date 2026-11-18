@@ -1,3 +1,4 @@
+import { formatBallot } from '../core/paxos/ballot';
 import type { NodeRole, NodeStatus } from '../core/paxos/types';
 import type { SimulationState } from '../core/simulation/simulation-state';
 
@@ -12,6 +13,18 @@ export interface Point {
   y: number;
 }
 
+/** Short, language-neutral state summary rendered inside a node card. */
+export type CaptionInfo =
+  | { key: 'chosen'; value: string }
+  | { key: 'ballot'; ballot: string }
+  | { key: 'idle' }
+  | { key: 'accepted'; ballot: string }
+  | { key: 'promised'; ballot: string }
+  | { key: 'noPromise' }
+  | { key: 'learned'; value: string }
+  | { key: 'listening' }
+  | { key: 'none' };
+
 export interface NodeLayout {
   id: string;
   role: NodeRole;
@@ -21,7 +34,7 @@ export interface NodeLayout {
   width: number;
   height: number;
   /** short state summary rendered inside the node card */
-  caption: string;
+  caption: CaptionInfo;
 }
 
 export interface LinkLayout {
@@ -57,28 +70,32 @@ function trim(from: Point, to: Point, distance: number): Point {
   return { x: from.x + (dx / length) * distance, y: from.y + (dy / length) * distance };
 }
 
-function captionFor(state: SimulationState, id: string): string {
+function captionFor(state: SimulationState, id: string): CaptionInfo {
   const proposer = state.proposers.find((entry) => entry.id === id);
   if (proposer) {
-    if (proposer.phase === 'chosen') return `chosen · ${proposer.chosenValue ?? '—'}`;
-    if (proposer.ballot) return `n = ${proposer.ballot.round}.${proposer.ballot.proposerId}`;
-    return 'idle';
+    if (proposer.phase === 'chosen') {
+      return { key: 'chosen', value: proposer.chosenValue ?? '—' };
+    }
+    if (proposer.ballot) return { key: 'ballot', ballot: formatBallot(proposer.ballot) };
+    return { key: 'idle' };
   }
   const acceptor = state.acceptors.find((entry) => entry.id === id);
   if (acceptor) {
     if (acceptor.acceptedBallot) {
-      return `accepted ${acceptor.acceptedBallot.round}.${acceptor.acceptedBallot.proposerId}`;
+      return { key: 'accepted', ballot: formatBallot(acceptor.acceptedBallot) };
     }
     if (acceptor.promisedBallot) {
-      return `promised ${acceptor.promisedBallot.round}.${acceptor.promisedBallot.proposerId}`;
+      return { key: 'promised', ballot: formatBallot(acceptor.promisedBallot) };
     }
-    return 'no promise';
+    return { key: 'noPromise' };
   }
   const learner = state.learners.find((entry) => entry.id === id);
   if (learner) {
-    return learner.chosenValue ? `learned · ${learner.chosenValue}` : 'listening';
+    return learner.chosenValue
+      ? { key: 'learned', value: learner.chosenValue }
+      : { key: 'listening' };
   }
-  return '';
+  return { key: 'none' };
 }
 
 export function computeTopology(state: SimulationState): {

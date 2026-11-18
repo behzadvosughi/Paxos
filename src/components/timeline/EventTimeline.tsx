@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { formatTime } from '../../core/i18n/terms';
+import { useI18n } from '../../i18n/useI18n';
 import { useSimulationStore } from '../../store/simulation-store';
 
 export function EventTimeline() {
@@ -7,6 +7,7 @@ export function EventTimeline() {
   const selectedEventId = useSimulationStore((store) => store.selectedEventId);
   const selectEvent = useSimulationStore((store) => store.selectEvent);
   const endRef = useRef<HTMLLIElement>(null);
+  const { t, event, kind, time } = useI18n();
 
   useEffect(() => {
     const element = endRef.current;
@@ -18,12 +19,12 @@ export function EventTimeline() {
   return (
     <section className="panel timeline-panel">
       <div className="panel-head compact">
-        <h2>Event timeline</h2>
-        <span className="panel-sub">{state.log.length} events</span>
+        <h2>{t('eventTimeline')}</h2>
+        <span className="panel-sub">{t('eventCount', { count: state.log.length })}</span>
       </div>
 
       {state.log.length === 0 ? (
-        <p className="hint">Press Play or Step ▶ to start the protocol. Every row below is a real simulation event.</p>
+        <p className="hint">{t('timelineEmpty')}</p>
       ) : (
         <ol className="timeline">
           {state.log.map((entry, index) => (
@@ -33,9 +34,9 @@ export function EventTimeline() {
               className={`timeline-row${entry.id === selectedEventId ? ' selected' : ''}`}
             >
               <button type="button" onClick={() => selectEvent(entry)}>
-                <span className="timeline-time">{formatTime(entry.time)}</span>
-                <span className={`timeline-kind kind-${entry.kind}`}>{entry.kind}</span>
-                <span className="timeline-desc">{entry.description}</span>
+                <span className="timeline-time">{time(entry.time)}</span>
+                <span className={`timeline-kind kind-${entry.kind}`}>{kind(entry.kind)}</span>
+                <span className="timeline-desc">{event(entry.description)}</span>
               </button>
             </li>
           ))}

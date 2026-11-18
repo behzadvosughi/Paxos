@@ -1,3 +1,5 @@
+import type { ReasonInfo } from '../i18n/reason';
+
 /**
  * Shared protocol-level types.
  *
@@ -44,7 +46,8 @@ export interface PromiseInfo {
 export interface NackInfo {
   acceptorId: string;
   ballot: Ballot;
-  reason: string;
+  /** language-neutral rejection reason, rendered by the interface */
+  reason: ReasonInfo;
   at: number;
 }
 
