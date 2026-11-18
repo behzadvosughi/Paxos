@@ -1,0 +1,124 @@
+.timeline-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 200px;
+}
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.timeline-row button {
+  display: grid;
+  grid-template-columns: 62px 74px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.timeline-row button:hover {
+  background: rgba(90, 169, 255, 0.06);
+}
+
+.timeline-row.selected button {
+  background: rgba(90, 169, 255, 0.1);
+  border-color: rgba(90, 169, 255, 0.35);
+}
+
+.timeline-time {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.timeline-kind {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  text-align: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.02);
+  justify-self: start;
+}
+
+.timeline-desc {
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.kind-prepare {
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.kind-promise {
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.kind-accept {
+  color: #fdba74;
+  border-color: rgba(249, 115, 22, 0.45);
+}
+
+.kind-accepted {
+  color: #d8b4fe;
+  border-color: rgba(168, 85, 247, 0.45);
+}
+
+.kind-nack {
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+.kind-quorum,
+.kind-chosen {
+  color: #a7f3d0;
+  border-color: rgba(52, 211, 153, 0.55);
+  background: rgba(52, 211, 153, 0.08);
+}
+
+.kind-drop,
+.kind-crash,
+.kind-system {
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.kind-recover,
+.kind-retry,
+.kind-partition,
+.kind-link {
+  color: #fcd34d;
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+@media (max-width: 620px) {
+  .timeline-row button {
+    grid-template-columns: 54px 66px minmax(0, 1fr);
+    gap: 6px;
+  }
+}
